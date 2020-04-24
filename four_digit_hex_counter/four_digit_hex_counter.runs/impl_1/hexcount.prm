@@ -1,0 +1,11 @@
+===================================
+Configuration Memory information
+===================================
+File Format        MCS
+Interface          SPIX1
+Size               16M
+Start Address      0x00000000
+End Address        0x00FFFFFF
+
+Addr1         Addr2         Date                    File(s)
+0x00000000    0x003A607B    Apr 23 21:59:32 2020    /home/steve/Software/VHDL/L2/four_digit_hex_counter/four_digit_hex_counter.runs/impl_1/hexcount.bit

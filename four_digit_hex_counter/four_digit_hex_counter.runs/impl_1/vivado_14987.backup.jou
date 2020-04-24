@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:39:14 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Thu Apr 23 21:57:03 2020
+# Process ID: 14987
+# Current directory: /home/steve/Software/VHDL/L2/four_digit_hex_counter/four_digit_hex_counter.runs/impl_1
+# Command line: vivado -log hexcount.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source hexcount.tcl -notrace
+# Log file: /home/steve/Software/VHDL/L2/four_digit_hex_counter/four_digit_hex_counter.runs/impl_1/hexcount.vdi
+# Journal file: /home/steve/Software/VHDL/L2/four_digit_hex_counter/four_digit_hex_counter.runs/impl_1/vivado.jou
+#-----------------------------------------------------------
+source hexcount.tcl -notrace
