@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:39:14 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Wed May  6 17:59:26 2020
+# Process ID: 8941
+# Current directory: /home/steve/Software/VHDL/L5/dac_siren/dac_siren.runs/impl_1
+# Command line: vivado -log siren.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source siren.tcl -notrace
+# Log file: /home/steve/Software/VHDL/L5/dac_siren/dac_siren.runs/impl_1/siren.vdi
+# Journal file: /home/steve/Software/VHDL/L5/dac_siren/dac_siren.runs/impl_1/vivado.jou
+#-----------------------------------------------------------
+source siren.tcl -notrace
