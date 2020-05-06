@@ -6,7 +6,7 @@ ENTITY leddec16 IS
 		dig : IN STD_LOGIC_VECTOR (1 DOWNTO 0); -- which digit to currently display
 		data : IN STD_LOGIC_VECTOR (15 DOWNTO 0); -- 16-bit (4-digit) data
 		anode : OUT STD_LOGIC_VECTOR (3 DOWNTO 0); -- which anode to turn on
-	seg : OUT STD_LOGIC_VECTOR (6 DOWNTO 0)); -- segment code for current digit
+		seg : OUT STD_LOGIC_VECTOR (6 DOWNTO 0)); -- segment code for current digit
 END leddec16;
 
 ARCHITECTURE Behavioral OF leddec16 IS
@@ -35,10 +35,29 @@ BEGIN
 	       "0110000" WHEN data4 = "1110" ELSE --E
 	       "0111000" WHEN data4 = "1111" ELSE --F
 	       "1111111";
-	-- Turn on anode of 7-segment display addressed by 2-bit digit selector dig
-	anode <= "1110" WHEN dig = "00" ELSE -- digit 0
-	         "1101" WHEN dig = "01" ELSE -- digit 1
-	         "1011" WHEN dig = "10" ELSE -- digit 2
-	         "0111" WHEN dig = "11" ELSE -- digit 3
-	         "1111";
+
+
+--Baseline code, contains leading zeroes
+--anode <= "1110" WHEN dig = "00" ELSE -- digit 0
+--         "1101" WHEN dig = "01" ELSE -- digit 1
+--         "1011" WHEN dig = "10" ELSE -- digit 2
+--         "0111" WHEN dig = "11" ELSE -- digit 3
+--         "1111";
+
+--Turn on anode of 7-segment display addressed by 
+--	2-bit digit selector dig
+anode<= "1110" WHEN dig = "00" AND  -- digit 0
+			data (15 downto 0) /= X"0000" ELSE
+
+      	"1101" WHEN dig = "01" AND  -- digit 1
+      		data (15 downto 4) /= X"000"  ELSE
+
+       	"1011" WHEN dig = "10" AND  -- digit 2
+       		data (15 downto 8) /= X"00"   ELSE 	
+
+      	"0111" WHEN dig = "11" AND 	-- digit 3
+      		data (15 downto 12)/= X"0"    ELSE
+
+      	"1111";	--default: turn off
+
 END Behavioral;

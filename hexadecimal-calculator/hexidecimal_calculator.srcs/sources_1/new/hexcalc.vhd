@@ -4,14 +4,27 @@ USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 ENTITY hexcalc IS
 	PORT (
-		clk_50MHz : IN STD_LOGIC; -- system clock (50 MHz)
-		SEG7_anode : OUT STD_LOGIC_VECTOR (3 DOWNTO 0); -- anodes of four 7-seg displays
-		SEG7_seg : OUT STD_LOGIC_VECTOR (6 DOWNTO 0); -- common segments of 7-seg displays
-		bt_clr : IN STD_LOGIC; -- calculator "clear" button
-		bt_plus : IN STD_LOGIC; -- calculator "+" button
-		bt_eq : IN STD_LOGIC; -- calculator "-" button
-		KB_col : OUT STD_LOGIC_VECTOR (4 DOWNTO 1); -- keypad column pins
-	KB_row : IN STD_LOGIC_VECTOR (4 DOWNTO 1)); -- keypad row pins
+		-- system clock (50 MHz)
+		clk_50MHz : IN STD_LOGIC; 
+		-- anodes of four 7-seg displays
+		SEG7_anode : OUT STD_LOGIC_VECTOR (3 DOWNTO 0);
+		-- common segments of 7-seg displays 
+		SEG7_seg : OUT STD_LOGIC_VECTOR (6 DOWNTO 0); 
+		-- calculator "clear" button
+		bt_clr : IN STD_LOGIC; 
+		-- calculator "+" button
+		bt_plus : IN STD_LOGIC;
+		-- calculator "=" button 
+		bt_eq : IN STD_LOGIC; 
+		
+		--NEW CODE 
+		--add a port for our subtraction/BTND button
+		BTND : IN STD_LOGIC;
+		
+		-- keypad column pins
+		KB_col : OUT STD_LOGIC_VECTOR (4 DOWNTO 1); 
+		-- keypad row pins
+		KB_row : IN STD_LOGIC_VECTOR (4 DOWNTO 1)); 
 END hexcalc;
 
 ARCHITECTURE Behavioral OF hexcalc IS
@@ -32,16 +45,30 @@ ARCHITECTURE Behavioral OF hexcalc IS
 			seg : OUT STD_LOGIC_VECTOR (6 DOWNTO 0)
 		);
 	END COMPONENT;
-	SIGNAL cnt : std_logic_vector(20 DOWNTO 0); -- counter to generate timing signals
+
+	-- counter to generate timing signals
+	SIGNAL cnt : std_logic_vector(20 DOWNTO 0); 
 	SIGNAL kp_clk, kp_hit, sm_clk : std_logic;
 	SIGNAL kp_value : std_logic_vector (3 DOWNTO 0);
-	SIGNAL nx_acc, acc : std_logic_vector (15 DOWNTO 0); -- accumulated sum
-	SIGNAL nx_operand, operand : std_logic_vector (15 DOWNTO 0); -- operand
-	SIGNAL display : std_logic_vector (15 DOWNTO 0); -- value to be displayed
-	SIGNAL led_mpx : STD_LOGIC_VECTOR (1 DOWNTO 0); -- 7-seg multiplexing clock
-	TYPE state IS (ENTER_ACC, ACC_RELEASE, START_OP, OP_RELEASE, 
-	ENTER_OP, SHOW_RESULT); -- state machine states
-	SIGNAL pr_state, nx_state : state; -- present and next states
+	-- accumulated sum
+	SIGNAL nx_acc, acc : std_logic_vector (15 DOWNTO 0); 
+	-- operand
+	SIGNAL nx_operand, operand : std_logic_vector (15 DOWNTO 0); 
+	-- value to be displayed
+	SIGNAL display : std_logic_vector (15 DOWNTO 0);
+	-- 7-seg multiplexing clock 
+	SIGNAL led_mpx : STD_LOGIC_VECTOR (1 DOWNTO 0); 
+
+	--NEW CODE
+	--New signal to record whether operation is + or -
+	SIGNAL operation_addsub : STD_LOGIC;
+
+	-- state machine states
+	TYPE state IS (ENTER_ACC, ACC_RELEASE, START_OP,  
+	OP_RELEASE, ENTER_OP, SHOW_RESULT);
+	-- present and next states 
+	SIGNAL pr_state, nx_state : state; 
+
 BEGIN
 	ck_proc : PROCESS (clk_50MHz)
 	BEGIN
@@ -82,12 +109,17 @@ BEGIN
 			nx_operand <= operand;
 			display <= acc;
 			CASE pr_state IS -- depending on present state...
-				WHEN ENTER_ACC => -- waiting for next digit in 1st operand entry
+				-- waiting for next digit in 1st operand entry
+				WHEN ENTER_ACC => 
 					IF kp_hit = '1' THEN
 						nx_acc <= acc(11 DOWNTO 0) & kp_value;
 						nx_state <= ACC_RELEASE;
 					ELSIF bt_plus = '1' THEN
 						nx_state <= START_OP;
+						operation_addsub <= '1'; --
+					ELSIF BTND = '1' THEN --added this section
+						nx_state <= START_OP;
+						operation_addsub <= '0';
 					ELSE
 						nx_state <= ENTER_ACC;
 					END IF;
@@ -109,16 +141,27 @@ BEGIN
 						nx_state <= ENTER_OP;
 					ELSE nx_state <= OP_RELEASE;
 					END IF;
-				WHEN ENTER_OP => -- waiting for next digit in 2nd operand
-					display <= operand;
-					IF bt_eq = '1' THEN
-						nx_acc <= acc + operand;
-						nx_state <= SHOW_RESULT;
-					ELSIF kp_hit = '1' THEN
-						nx_operand <= operand(11 DOWNTO 0) & kp_value;
-						nx_state <= OP_RELEASE;
-					ELSE nx_state <= ENTER_OP;
-					END IF;
+
+				-- waiting for next digit in 2nd operand
+				WHEN ENTER_OP => 
+				    display <= operand;
+
+				    --if operation=0, we are subtracting
+				    IF bt_eq = '1' AND operation_addsub = '0' THEN
+				        nx_acc <= acc - operand;
+				        nx_state <= SHOW_RESULT;
+
+				    --if operation=1, we are adding
+				    ELSIF bt_eq = '1' AND operation_addsub = '1' THEN
+				        nx_acc <= acc + operand;
+				        nx_state <= SHOW_RESULT;
+
+				    ELSIF kp_hit = '1' THEN
+				        nx_operand <= operand(11 DOWNTO 0) & kp_value;
+				        nx_state <= OP_RELEASE;
+				    ELSE nx_state <= ENTER_OP;
+				    END IF;
+
 				WHEN SHOW_RESULT => -- display result of addition
 					IF kp_hit = '1' THEN
 						nx_acc <= X"000" & kp_value;
