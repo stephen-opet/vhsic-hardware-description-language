@@ -1,0 +1,3 @@
+This DAC Siren program was built through Vivado VHDL on the XILINX Digilent A7-100T FPGA board. The project uses five VHDL source files; dac_if.vhd controls the digital-to-analog PMOD signal conversion, tone.vhd generates a triangular waveform, wail.vhd modulates this waveform to create oscillating wails, and siren.vhd interfaces with this system to generate the final acoustic output signal to the PMOD, while siren.xdc operates as the Vivado constraints file.
+
+Once synthesizing, implementing and programming the FPGA with the baseline program, a digital signal will be generated onboard the FPGA, processed through digital-to-analog conversion to create an acoustic signal, and output through the PMOD I2S 3.5mm headphone jack.
