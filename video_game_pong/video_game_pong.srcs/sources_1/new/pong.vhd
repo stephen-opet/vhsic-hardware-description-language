@@ -15,6 +15,8 @@ ENTITY pong IS
         ADC_SCLK : OUT STD_LOGIC;
         ADC_SDATA1 : IN STD_LOGIC;
         ADC_SDATA2 : IN STD_LOGIC;
+        BTNR : IN STD_LOGIC;
+        BTNL : IN STD_LOGIC;
     btn0 : IN STD_LOGIC); -- button to initiate serve
 END pong;
 
@@ -28,6 +30,9 @@ ARCHITECTURE Behavioral OF pong IS
     SIGNAL serial_clk, sample_clk : STD_LOGIC;
     SIGNAL adout : STD_LOGIC_VECTOR (11 DOWNTO 0);
     SIGNAL count : STD_LOGIC_VECTOR (9 DOWNTO 0); -- counter to generate ADC clocks
+
+    SIGNAL prescaler : integer; --Addition for BTNL/BTNR paddle control
+
     COMPONENT adc_if IS
         PORT (
             SCK : IN STD_LOGIC;
@@ -84,10 +89,27 @@ BEGIN
     ADC_SCLK <= serial_clk;
     sample_clk <= count(9); -- sampling clock is low for 16 SCLKs
     ADC_CS <= sample_clk;
-    -- Multiplies ADC output (0-4095) by 5/32 to give bat position (0-640)
-    --batpos <= ('0' & adout(11 DOWNTO 3)) + adout(11 DOWNTO 5);
-    batpos <= ("00" & adout(11 DOWNTO 3)) + adout(11 DOWNTO 4);
-    -- 512 + 256 = 768
+
+    --PROCESS REPLACES PMOD ADC & POTENTIOMETER WITH BTNL/BTNR BUTTONS
+    movepaddle : PROCESS (clk_in,prescaler,batpos,BTNL,BTNR)
+    BEGIN
+        IF rising_edge(clk_in) THEN   -- rising clock edge
+            IF prescaler = 250000 THEN  --prescalar integer slows down system clock
+                prescaler <= 0;        --execute & reset every 312K clock cycles
+                IF BTNL = '1' THEN
+                    batpos <= --if "left" is selected, bat position will decrease
+                        conv_std_logic_vector((conv_integer(batpos)-1), 11);
+                ELSIF BTNR = '1' THEN
+                    batpos <= --if "right" is selected, bat position will increase
+                        conv_std_logic_vector((conv_integer(batpos)+1), 11);
+                END IF;
+            ELSE    --increment prescalar
+                prescaler <= prescaler + 1;
+            END IF;
+        END IF;
+    END PROCESS;
+
+
     adc : adc_if
     PORT MAP(-- instantiate ADC serial to parallel interface
         SCK => serial_clk, 
