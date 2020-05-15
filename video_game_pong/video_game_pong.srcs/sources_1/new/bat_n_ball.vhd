@@ -17,11 +17,18 @@ ENTITY bat_n_ball IS
 END bat_n_ball;
 
 ARCHITECTURE Behavioral OF bat_n_ball IS
-    CONSTANT bsize : INTEGER := 8; -- ball size in pixels
-    CONSTANT bat_w : INTEGER := 20; -- bat width in pixels
-    CONSTANT bat_h : INTEGER := 3; -- bat height in pixels
+  -- ball size in pixels
+  CONSTANT bsize : INTEGER := 8; 
+  -- bat width in pixels (20 initially)
+  SIGNAL bat_w : INTEGER := 300;
+  -- bat height in pixels 
+  CONSTANT bat_h : INTEGER := 3; 
+
     -- distance ball moves each frame
-    CONSTANT ball_speed : STD_LOGIC_VECTOR (10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR (6, 11);
+    CONSTANT ball_speed : STD_LOGIC_VECTOR (10 DOWNTO 0) 
+        -- := CONV_STD_LOGIC_VECTOR (6, 11); INITIAL CODE
+        := CONV_STD_LOGIC_VECTOR (24, 11);
+
     SIGNAL ball_on : STD_LOGIC; -- indicates whether ball is at current pixel position
     SIGNAL bat_on : STD_LOGIC; -- indicates whether bat at over current pixel position
     SIGNAL game_on : STD_LOGIC := '0'; -- indicates whether ball is in play
@@ -71,32 +78,40 @@ BEGIN
             bat_on <= '0';
         END IF;
     END PROCESS;
+
     -- process to move ball once every frame (i.e. once every vsync pulse)
     mball : PROCESS
         VARIABLE temp : STD_LOGIC_VECTOR (11 DOWNTO 0);
     BEGIN
+
         WAIT UNTIL rising_edge(v_sync);
         IF serve = '1' AND game_on = '0' THEN -- test for new serve
             game_on <= '1';
             ball_y_motion <= (NOT ball_speed) + 1; -- set vspeed to (- ball_speed) pixels
         ELSIF ball_y <= bsize THEN -- bounce off top wall
             ball_y_motion <= ball_speed; -- set vspeed to (+ ball_speed) pixels
+        
         ELSIF ball_y + bsize >= 600 THEN -- if ball meets bottom wall
             ball_y_motion <= (NOT ball_speed) + 1; -- set vspeed to (- ball_speed) pixels
             game_on <= '0'; -- and make ball disappear
+        
         END IF;
         -- allow for bounce off left or right of screen
         IF ball_x + bsize >= 800 THEN -- bounce off right wall
             ball_x_motion <= (NOT ball_speed) + 1; -- set hspeed to (- ball_speed) pixels
+        
         ELSIF ball_x <= bsize THEN -- bounce off left wall
             ball_x_motion <= ball_speed; -- set hspeed to (+ ball_speed) pixels
         END IF;
+        
         -- allow for bounce off bat
         IF (ball_x + bsize/2) >= (bat_x - bat_w) AND
          (ball_x - bsize/2) <= (bat_x + bat_w) AND
              (ball_y + bsize/2) >= (bat_y - bat_h) AND
              (ball_y - bsize/2) <= (bat_y + bat_h) THEN
-                ball_y_motion <= (NOT ball_speed) + 1; -- set vspeed to (- ball_speed) pixels
+                ball_y_motion <= (NOT ball_speed) + 1; 
+                --DECREASE BAT WIDTH
+                bat_w <= bat_w - 10;
         END IF;
         -- compute next ball vertical position
         -- variable temp adds one more bit to calculation to fix unsigned underflow problems
